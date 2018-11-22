@@ -14,11 +14,45 @@ mongoose.connect("mongodb://localhost/nodejs-interview-db");
 const User = require("./models/users");
 const Token = require("./models/tokens");
 
+const PASSWORD_SALT = 10;
+
 app.get("/", (req, res) => {
-  res.redirect("/login");
+  res.render("index.pug", { message: "Welcome!" });
 });
 
-app.post("/login", (req, res) => {});
+app.get("/login", (req, res) => {
+  res.render("login.pug", { message: "Login", errors: [] });
+});
+
+app.post("/login", async (req, res) => {
+  const errors = [];
+  if (!req.body.email) {
+    errors.push("Email is required");
+  }
+  if (!req.body.password) {
+    errors.push("Password is required");
+  }
+  if (errors.length !== 0) {
+    return res.render("login.pug", { message: "Login", errors: errors });
+  }
+  const user = await User.findOne({ email: req.body.email });
+  if (!user) {
+    console.log("Wrong user");
+    return res.render("login.pug", {
+      message: "Login",
+      errors: ["Wrong email or passwrod"]
+    });
+  }
+  if (!bcrypt.compareSync(req.body.password, user.password)) {
+    return res.render("login.pug", {
+      message: "Login",
+      errors: ["Wrong email or passwrod"]
+    });
+  }
+  res.render("index.pug", {
+    message: "You are successfully logged in."
+  });
+});
 
 app.get("/register", (req, res) => {
   res.render("register.pug", {});
@@ -42,7 +76,7 @@ app.post("/register", async (req, res) => {
   }
   const user = new User();
   user.email = email;
-  user.password = bcrypt.hashSync(password, 10);
+  user.password = bcrypt.hashSync(password, PASSWORD_SALT);
   await user.save();
   const token = new Token();
   token.token = uuidv4();
