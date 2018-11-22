@@ -1,0 +1,16 @@
+html
+  head
+    title Registration
+  body
+    h3= message
+    form(action="/register" method="post")
+      label(for="email") Enter your email:
+      input(type="email" name="email")
+      br
+      label(for="password") Enter you password:
+      input(type="password" name="password")
+      br
+      label(for="confirm_password") Confrim your password:
+      input(type="password" name="confirm_password")
+      br
+      input(type="submit" value="Submit")
